@@ -1,9 +1,16 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Configuration;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 
+var builder = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory) // Use AppContext.BaseDirectory instead of Directory.GetCurrentDirectory()
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+IConfiguration configuration = builder.Build();
+
 ConnectionFactory factory = new();
-factory.Uri = new Uri("amqps://hqnqjkbe:w9vUNnpPxRcF3o8N11VXEuz43qVpXx-y@sparrow.rmq.cloudamqp.com/hqnqjkbe");
+factory.Uri = new Uri(configuration["RabbitMq"]);
 
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
