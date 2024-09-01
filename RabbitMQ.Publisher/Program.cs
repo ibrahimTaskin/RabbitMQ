@@ -15,10 +15,19 @@ using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
 // create queue
-channel.QueueDeclare(queue: "example-queue", exclusive: false); // exclusive = many queue can subscribe
+// exclusive = many queue can subscribe
+// durable = kalıcı kuyruk, yine de iletiler kaybolabilir. (outbox, inbox pattern uygulanabilir)
+channel.QueueDeclare(queue: "example-queue", exclusive: false,durable: false); 
 
-// RabbitMq accepts queues of type byte
-byte[] message = Encoding.UTF8.GetBytes("Merhaba");
-channel.BasicPublish(exchange: "", routingKey: "example-queue", basicProperties: null, message); // exchange: "" default exchange(direct)
+IBasicProperties basicProperties = channel.CreateBasicProperties();
+basicProperties.Persistent = true;
 
-Console.ReadLine();
+for (int i = 0; i < 100; i++)
+{
+    // RabbitMq accepts queues of type byte
+    await Task.Delay(200);
+    byte[] message = Encoding.UTF8.GetBytes("Merhaba " +  i);
+    channel.BasicPublish(exchange: "", routingKey: "example-queue", basicProperties: basicProperties, message);
+}
+
+Console.Read();
